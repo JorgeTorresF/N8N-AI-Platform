@@ -1,0 +1,143 @@
+{
+  "name": "Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Process error information\nconst errorData = items[0].json;\n\nconst processedError = {\n  error_id: $jmespath(errorData, 'error_id') || Date.now().toString(),\n  workflow_id: $jmespath(errorData, 'workflow_id'),\n  node_name: $jmespath(errorData, 'node_name'),\n  error_message: $jmespath(errorData, 'error_message'),\n  error_type: $jmespath(errorData, 'error_type') || 'unknown',\n  timestamp: new Date().toISOString(),\n  retry_count: $jmespath(errorData, 'retry_count') || 0,\n  max_retries: $jmespath(errorData, 'max_retries') || 3\n};\n\nreturn [{ json: processedError }];"
+      },
+      "name": "Process Error",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "error_logs",
+        "columns": "error_id,workflow_id,node_name,error_message,error_type,timestamp,retry_count"
+      },
+      "name": "Log Error",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.retry_count}}",
+              "operation": "smaller",
+              "value2": "={{$json.max_retries}}"
+            }
+          ]
+        }
+      },
+      "name": "Check Retry Limit",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Prepare retry logic\nconst retryData = {\n  workflow_id: $json.workflow_id,\n  retry_count: $json.retry_count + 1,\n  retry_delay: Math.pow(2, $json.retry_count) * 1000, // Exponential backoff\n  action: 'retry'\n};\n\nreturn [{ json: retryData }];"
+      },
+      "name": "Prepare Retry",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        900,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "channel": "#alerts",
+        "text": "🚨 Critical Error: Workflow {{$json.workflow_id}} failed after {{$json.retry_count}} retries.\\nError: {{$json.error_message}}\\nNode: {{$json.node_name}}\\nTime: {{$json.timestamp}}"
+      },
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Process Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Error": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error": {
+      "main": [
+        [
+          {
+            "node": "Check Retry Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Retry Limit": {
+      "main": [
+        [
+          {
+            "node": "Send Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "6"
+}
