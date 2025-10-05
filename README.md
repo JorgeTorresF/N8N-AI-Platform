@@ -1,93 +1,50 @@
-# N8N AI Platform Replication Project Archive
+# React + TypeScript + Vite
 
-**Created**: 2025-08-11 14:10:42  
-**Archive Contents**: Complete N8N workflow automation system + MiniMax space content
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## 📁 Archive Structure
+Currently, two official plugins are available:
 
-```
-N8N_AI_Platform_Archive/
-├── README.md (this file)
-├── N8N_AI_Platform_Replication_Guide.md (main documentation)
-├── N8N_AI_Platform_Replication_Guide.pdf
-├── N8N_AI_Platform_Replication_Guide.docx
-├── minimax_space_content.md (extracted webpage)
-├── todo.md (project tracking)
-├── workflows/ (ready-to-import N8N workflows)
-│   ├── master_orchestrator.json
-│   ├── research_engine.json
-│   ├── content_generator.json
-│   ├── code_engine.json
-│   ├── memory_manager.json
-│   └── error_handler.json
-├── docs/ (detailed documentation)
-│   ├── master_workflow_architecture.md
-│   ├── capability_mapping.md
-│   ├── feasibility_assessment.md
-│   ├── implementation_roadmap.md
-│   ├── limitations_and_workarounds.md
-│   └── [other research files]
-└── extract/ (extracted content and research data)
-    ├── minimax_space_content.json
-    ├── manus_analysis.json
-    ├── lovable_analysis.json
-    ├── chatllm_analysis.json
-    └── [other analysis files]
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+
+- Configure the top-level `parserOptions` property like this:
+
+```js
+export default tseslint.config({
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
 ```
 
-## 🚀 Quick Start
+- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
+- Optionally add `...tseslint.configs.stylisticTypeChecked`
+- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
 
-1. **Main Guide**: Start with `N8N_AI_Platform_Replication_Guide.md` for complete implementation instructions
-2. **Workflows**: Import JSON files from `workflows/` directory into your N8N instance
-3. **Architecture**: Review `docs/master_workflow_architecture.md` for system design
-4. **Platform Analysis**: Check `extract/` for detailed AI platform capability analysis
+```js
+// eslint.config.js
+import react from 'eslint-plugin-react'
 
-## 📊 Project Summary
-
-This archive contains a complete N8N workflow automation system that replicates capabilities from:
-- **Manus.im**: Autonomous AI agent functionality
-- **Lovable.dev**: AI-powered app/website creation
-- **ChatLLM (Abacus.ai)**: Multi-LLM access and workflow automation
-- **MiniMax**: AGI foundation models and content generation
-- **General AI Agent**: Research, content generation, development capabilities
-
-### Key Features Replicated:
-- ✅ Text generation and processing
-- ✅ Web search and research automation
-- ✅ Code generation and execution
-- ✅ Data analysis and visualization
-- ✅ Multi-modal content processing
-- ✅ Team communication integration
-- ✅ File operations and management
-- ⚠️ App/website creation (limited)
-- ⚠️ Video generation (external APIs required)
-
-## 🔧 Implementation Requirements
-
-- **N8N Platform**: Version 1.0+ with workflow automation
-- **External APIs**: OpenAI, Claude, Google APIs for full functionality
-- **Database**: PostgreSQL for memory management
-- **Storage**: Redis for session handling
-- **Infrastructure**: Docker-compatible environment recommended
-
-## 📋 Additional Content
-
-**MiniMax Space Content**: Contains vector logo collection extracted from https://ci4x18qrwf6q.space.minimax.io including:
-- 9 editable SVG vector files
-- 8 enhanced PNG iterations
-- Professional branding assets
-- Design documentation
-
-## 🎯 Next Steps
-
-1. Read the main implementation guide
-2. Set up N8N environment
-3. Configure API credentials
-4. Import workflow JSON files
-5. Test individual workflows
-6. Deploy complete system
-
----
-**Archive Created**: 2025-08-11 14:10:42  
-**Total Files**: 50+ documentation, workflow, and analysis files  
-**Status**: Production-ready implementation guide
+export default tseslint.config({
+  // Set the react version
+  settings: { react: { version: '18.3' } },
+  plugins: {
+    // Add the react plugin
+    react,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended rules
+    ...react.configs.recommended.rules,
+    ...react.configs['jsx-runtime'].rules,
+  },
+})
+```

@@ -1,0 +1,134 @@
+{
+  "name": "Memory Manager",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM workflow_state WHERE session_id = '{{$json.session_id}}' ORDER BY created_at DESC LIMIT 1"
+      },
+      "name": "Get Current State",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.operation}}",
+              "operation": "equal",
+              "value2": "save"
+            }
+          ]
+        }
+      },
+      "name": "Check Operation",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "workflow_state",
+        "columns": "session_id,state_data,created_at",
+        "additionalFields": {
+          "mode": "independently"
+        }
+      },
+      "name": "Save State",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        680,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Process and return the current state\nconst currentState = items[0].json;\n\nreturn [{\n  json: {\n    session_id: currentState.session_id,\n    state: JSON.parse(currentState.state_data || '{}'),\n    last_updated: currentState.created_at,\n    operation_success: true\n  }\n}];"
+      },
+      "name": "Process State",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Get Current State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current State": {
+      "main": [
+        [
+          {
+            "node": "Check Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Operation": {
+      "main": [
+        [
+          {
+            "node": "Process State",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save State": {
+      "main": [
+        [
+          {
+            "node": "Process State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "5"
+}
